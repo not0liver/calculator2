@@ -1,236 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Remit Calculator</title>
-    <style>
-        /* Modern system fonts and centered layout */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f5f6f8;
-            display: flex;
-            align-items: center; /* Centers vertically */
-            justify-content: center; /* Centers horizontally */
-            min-height: 100vh;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#fafafa">
+<title>Remit Calculator</title>
+<style>
+  :root{
+    --ink:#1c1c1c;
+    --muted:#9a9a9a;
+    --line:#e6e6e6;
+    --bg:#fafafa;
+    --accent:#1c1c1c;
+    --mono: 'SF Mono', 'Roboto Mono', monospace;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  .screen{
+    max-width:420px;
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    padding:48px 24px 32px;
+    display:flex;
+    flex-direction:column;
+  }
 
-        /* Floating app card style */
-        .app-card {
-            width: 90%;
-            max-width: 380px;
-            background-color: #ffffff;
-            border-radius: 24px;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-            padding: 32px 24px;
-            box-sizing: border-box;
-        }
+  h1{
+    font-size:19px;
+    font-weight:700;
+    color:var(--ink);
+    margin:0 0 2px;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 36px;
+  }
 
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
+  .field{ margin-bottom:24px; }
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .field-wrap{
+    display:flex;
+    align-items:baseline;
+    border-bottom:1.5px solid var(--line);
+    padding-bottom:8px;
+    transition:border-color .15s;
+  }
+  .field-wrap.focus{ border-color:var(--ink); }
+  .currency{
+    font-size:17px;
+    color:var(--muted);
+    margin-right:6px;
+  }
+  input[type="number"]{
+    flex:1;
+    width:100%;
+    border:none;
+    outline:none;
+    background:transparent;
+    padding:4px 0;
+    font-size:20px;
+    font-weight:600;
+    color:var(--ink);
+    font-family:var(--mono);
+    -webkit-appearance:none;
+  }
+  input::placeholder{ color:#d2d2d2; font-weight:500; }
+  input::-webkit-outer-spin-button, input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+  input[type=number]{-moz-appearance:textfield;}
 
-        .header h2 {
-            margin: 0;
-            color: #1c1c1c;
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
+  .calc-btn{
+    width:100%;
+    border:none;
+    border-radius:10px;
+    padding:16px;
+    font-size:15px;
+    font-weight:700;
+    color:#fff;
+    background:var(--accent);
+    margin-top:8px;
+    cursor:pointer;
+    transition:opacity .1s;
+  }
+  .calc-btn:active{ opacity:0.75; }
 
-        .header p {
-            margin: 6px 0 0 0;
-            color: #888;
-            font-size: 14px;
-        }
+  .results{
+    display:none;
+    margin-top:36px;
+    animation:fade .25s ease;
+  }
+  @keyframes fade{ from{opacity:0;} to{opacity:1;} }
 
-        .input-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
+  .row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:10px 0;
+    font-size:13px;
+    color:#777;
+  }
+  .row .value{ font-family:var(--mono); color:var(--ink); font-weight:600; }
+  .row.net{ border-top:1px solid var(--line); margin-top:2px; padding-top:14px; }
+  .row.net .label, .row.net .value{ color:var(--ink); font-weight:700; font-size:14px;}
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: #555;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+  .final{
+    margin-top:28px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+    text-align:left;
+  }
+  .final-label{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+  .final-amount{
+    font-family:var(--mono);
+    font-size:44px;
+    font-weight:700;
+    color:var(--ink);
+    letter-spacing:-0.02em;
+  }
+  .final-note{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:6px;
+  }
+  .final-note.zero{ color:#1f8a5f; font-weight:600; }
 
-        input {
-            width: 100%;
-            padding: 16px 16px 16px 45px;
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            background-color: #f9f9f9;
-            border: 2px solid transparent;
-            border-radius: 16px;
-            box-sizing: border-box;
-            outline: none;
-            transition: all 0.2s ease;
-            -webkit-appearance: none;
-        }
-
-        /* Adds the Peso sign inside the input */
-        .input-group::before {
-            content: "₱";
-            position: absolute;
-            left: 18px;
-            top: 40px;
-            font-size: 18px;
-            font-weight: 600;
-            color: #aaa;
-        }
-
-        input:focus {
-            background-color: #fff;
-            border-color: #d70f64; /* Foodpanda Pink */
-            box-shadow: 0 4px 12px rgba(215, 15, 100, 0.1);
-        }
-
-        button {
-            width: 100%;
-            padding: 18px;
-            background-color: #d70f64;
-            color: white;
-            font-size: 16px;
-            font-weight: 700;
-            border: none;
-            border-radius: 16px;
-            cursor: pointer;
-            margin-top: 12px;
-            box-shadow: 0 8px 20px rgba(215, 15, 100, 0.25);
-            transition: transform 0.1s, box-shadow 0.1s;
-            -webkit-appearance: none;
-        }
-
-        button:active {
-            transform: scale(0.97);
-            box-shadow: 0 4px 10px rgba(215, 15, 100, 0.2);
-        }
-
-        /* Results section with smooth fade-in */
-        .results-card {
-            margin-top: 24px;
-            padding: 24px;
-            background-color: #fff4f7; /* Light pink background */
-            border-radius: 16px;
-            border: 1px solid #ffe1eb;
-            display: none;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.4s ease, transform 0.4s ease;
-        }
-
-        .results-card.show {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .result-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .divider {
-            height: 1px;
-            background-color: #f0c5d3;
-            margin: 16px 0;
-        }
-
-        .final-amount {
-            text-align: center;
-            margin-top: 16px;
-        }
-
-        .final-amount span {
-            font-size: 13px;
-            color: #d70f64;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .final-amount .amount {
-            font-size: 42px;
-            color: #1c1c1c;
-            font-weight: 800;
-            margin-top: 4px;
-            letter-spacing: -1px;
-        }
-    </style>
+  footer{
+    margin-top:auto;
+    padding-top:40px;
+    font-size:11px;
+    color:#c4c4c4;
+  }
+</style>
 </head>
 <body>
+  <div class="screen">
+    <h1>Remit Calculator</h1>
 
-    <div class="app-card">
-        <div class="header">
-            <h2>Smart Remit</h2>
-            <p>Auto-deducts 2% tax & rounds up</p>
-        </div>
-
-        <div class="input-group">
-            <label for="wallet">Wallet Balance</label>
-            <input type="number" id="wallet" placeholder="1766.03" inputmode="decimal">
-        </div>
-
-        <div class="input-group">
-            <label for="payments">Payments (Sahod)</label>
-            <input type="number" id="payments" placeholder="532.82" inputmode="decimal">
-        </div>
-
-        <button onclick="calculateRemit()">Calculate Exact Pay</button>
-
-        <div class="results-card" id="results">
-            <div class="result-row">
-                <span>Net Earnings (After 2%):</span>
-                <span id="net-display" style="font-weight: 600; color:#333;">₱0.00</span>
-            </div>
-            
-            <div class="divider"></div>
-
-            <div class="final-amount">
-                <span>Pay at 7-Eleven</span>
-                <div class="amount" id="final-display">₱0</div>
-            </div>
-        </div>
+    <div class="field">
+      <label for="wallet">Wallet balance</label>
+      <div class="field-wrap" id="walletWrap">
+        <span class="currency">₱</span>
+        <input type="number" id="wallet" placeholder="1766.03" inputmode="decimal">
+      </div>
     </div>
 
-    <script>
-        function calculateRemit() {
-            let walletInput = document.getElementById('wallet').value;
-            let paymentsInput = document.getElementById('payments').value;
+    <div class="field">
+      <label for="payments">Current payments</label>
+      <div class="field-wrap" id="paymentsWrap">
+        <span class="currency">₱</span>
+        <input type="number" id="payments" placeholder="532.82" inputmode="decimal">
+      </div>
+    </div>
 
-            let rawWallet = parseFloat(walletInput) || 0;
-            let rawPayments = parseFloat(paymentsInput) || 0;
+    <button class="calc-btn" onclick="calculateRemit()">Calculate</button>
 
-            let debt = Math.abs(rawWallet);
-            let tax = rawPayments * 0.02;
-            let netEarnings = rawPayments - tax;
-            let exactRemit = debt - netEarnings;
-            let finalRemit = exactRemit > 0 ? Math.ceil(exactRemit) : 0;
+    <div class="results" id="results">
+      <div class="row">
+        <span class="label">Gross earnings</span>
+        <span class="value" id="gross-display">₱0.00</span>
+      </div>
+      <div class="row">
+        <span class="label">2% tax</span>
+        <span class="value" id="tax-display">−₱0.00</span>
+      </div>
+      <div class="row net">
+        <span class="label">Net earnings</span>
+        <span class="value" id="net-display">₱0.00</span>
+      </div>
+      <div class="row">
+        <span class="label">Wallet debt</span>
+        <span class="value" id="debt-display">₱0.00</span>
+      </div>
 
-            document.getElementById('net-display').innerText = '₱' + netEarnings.toFixed(2);
-            document.getElementById('final-display').innerText = '₱' + finalRemit;
+      <div class="final">
+        <div class="final-label">Pay at 7-Eleven</div>
+        <div class="final-amount" id="final-display">₱0</div>
+        <div class="final-note" id="final-note">Rounded up to the nearest peso</div>
+      </div>
+    </div>
 
-            // Trigger the fade-in animation
-            let resultsCard = document.getElementById('results');
-            resultsCard.style.display = 'block';
-            
-            // Small delay to allow display:block to apply before changing opacity
-            setTimeout(() => {
-                resultsCard.classList.add('show');
-            }, 10);
-        }
-    </script>
+  </div>
+
+<script>
+  ['wallet','payments'].forEach(id=>{
+    const input = document.getElementById(id);
+    const wrap = document.getElementById(id+'Wrap');
+    input.addEventListener('focus', ()=> wrap.classList.add('focus'));
+    input.addEventListener('blur', ()=> wrap.classList.remove('focus'));
+  });
+
+  function calculateRemit() {
+    let walletInput = document.getElementById('wallet').value;
+    let paymentsInput = document.getElementById('payments').value;
+
+    let rawWallet = parseFloat(walletInput) || 0;
+    let rawPayments = parseFloat(paymentsInput) || 0;
+
+    let debt = Math.abs(rawWallet);
+
+    let tax = rawPayments * 0.02;
+    let netEarnings = rawPayments - tax;
+
+    let exactRemit = debt - netEarnings;
+
+    let finalRemit = exactRemit > 0 ? Math.ceil(exactRemit) : 0;
+
+    document.getElementById('gross-display').innerText = '₱' + rawPayments.toFixed(2);
+    document.getElementById('tax-display').innerText = '−₱' + tax.toFixed(2);
+    document.getElementById('net-display').innerText = '₱' + netEarnings.toFixed(2);
+    document.getElementById('debt-display').innerText = '₱' + debt.toFixed(2);
+    document.getElementById('final-display').innerText = '₱' + finalRemit;
+
+    const note = document.getElementById('final-note');
+    if (finalRemit === 0) {
+      note.textContent = 'Earnings cover the debt — nothing to pay';
+      note.classList.add('zero');
+    } else {
+      note.textContent = 'Rounded up to the nearest peso';
+      note.classList.remove('zero');
+    }
+
+    document.getElementById('results').style.display = 'block';
+  }
+</script>
 </body>
 </html>
