@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Restricts zoom and forces mobile-like behavior -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Remit Calculator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Mobile app container style */
+        .app-container {
+            width: 100%;
+            max-width: 420px; /* Keeps it mobile-sized even on desktop */
+            min-height: 100vh;
+            background-color: #ffffff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 24px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            margin-top: 10px;
+            margin-bottom: 24px;
+            color: #333;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+            -webkit-appearance: none; /* Removes default iOS styling */
+        }
+
+        input:focus {
+            border-color: #d70f64; /* Foodpanda pink */
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background-color: #d70f64;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+            -webkit-appearance: none;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        .results-card {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            display: none; /* Hidden until calculated */
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #ddd;
+            margin: 16px 0;
+        }
+
+        .final-amount {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .final-amount span {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .final-amount .amount {
+            font-size: 36px;
+            color: #d70f64;
+            font-weight: 800;
+        }
+        
+        /* Hint text */
+        .note {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h2>Remit Calculator</h2>
+
+        <div class="input-group">
+            <label for="wallet">Wallet Balance (Current COD Debt)</label>
+            <!-- Type number allows easy keypad opening on mobile -->
+            <input type="number" id="wallet" placeholder="e.g. 1766.03" inputmode="decimal">
+            <div class="note">You can type it with or without the negative sign.</div>
+        </div>
+
+        <div class="input-group">
+            <label for="payments">Current Payments (Earnings)</label>
+            <input type="number" id="payments" placeholder="e.g. 532.82" inputmode="decimal">
+        </div>
+
+        <button onclick="calculateRemit()">Calculate Amount</button>
+
+        <div class="results-card" id="results">
+            <div class="result-row">
+                <span>Gross Earnings:</span>
+                <span id="gross-display">₱0.00</span>
+            </div>
+            <div class="result-row">
+                <span>Minus 2% Tax:</span>
+                <span id="tax-display">-₱0.00</span>
+            </div>
+            <div class="result-row" style="font-weight: 600; color: #333;">
+                <span>Net Earnings Tomorrow:</span>
+                <span id="net-display">₱0.00</span>
+            </div>
+            
+            <div class="divider"></div>
+
+            <div class="result-row">
+                <span>Wallet Debt:</span>
+                <span id="debt-display">₱0.00</span>
+            </div>
+
+            <div class="final-amount">
+                <span>Pay at 7-Eleven:</span>
+                <div class="amount" id="final-display">₱0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateRemit() {
+            // Get values from inputs
+            let walletInput = document.getElementById('wallet').value;
+            let paymentsInput = document.getElementById('payments').value;
+
+            // If empty, default to 0
+            let rawWallet = parseFloat(walletInput) || 0;
+            let rawPayments = parseFloat(paymentsInput) || 0;
+
+            // Convert wallet to a positive number for the calculation, just in case user types "-1766.03"
+            let debt = Math.abs(rawWallet);
+
+            // Calculate tax and net earnings
+            let tax = rawPayments * 0.02;
+            let netEarnings = rawPayments - tax;
+
+            // Calculate exactly how much is left to pay
+            let exactRemit = debt - netEarnings;
+
+            // Round UP to the nearest whole peso for 7-Eleven, or set to 0 if earnings cover the whole debt
+            let finalRemit = exactRemit > 0 ? Math.ceil(exactRemit) : 0;
+
+            // Update UI elements
+            document.getElementById('gross-display').innerText = '₱' + rawPayments.toFixed(2);
+            document.getElementById('tax-display').innerText = '-₱' + tax.toFixed(2);
+            document.getElementById('net-display').innerText = '₱' + netEarnings.toFixed(2);
+            document.getElementById('debt-display').innerText = '₱' + debt.toFixed(2);
+            document.getElementById('final-display').innerText = '₱' + finalRemit;
+
+            // Show the results card
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
